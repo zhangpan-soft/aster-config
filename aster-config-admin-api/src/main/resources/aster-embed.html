@@ -7,44 +7,109 @@
   <style>
     :root {
       color-scheme: light;
-      --bg: #f7f8fa;
+      --bg: #f6f7f9;
       --panel: #ffffff;
-      --line: #d9dee7;
+      --line: #d8dde6;
+      --line-strong: #b8c0cf;
       --text: #172033;
       --muted: #667085;
       --primary: #2457d6;
+      --primary-soft: #edf3ff;
       --danger: #c0392b;
       --ok: #0f7b4f;
+      --warn: #9a6500;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
+      min-width: 320px;
       background: var(--bg);
       color: var(--text);
       font-size: 14px;
     }
+
     .shell {
       min-height: 100vh;
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto auto 1fr;
     }
-    .toolbar {
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 54px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .brand {
+      display: grid;
+      gap: 1px;
+      min-width: 160px;
+    }
+
+    .brand strong {
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .nav a.active {
+      border-color: #b9c9f5;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .scopebar {
       display: grid;
       grid-template-columns: repeat(4, minmax(120px, 1fr)) auto auto auto;
       gap: 8px;
       align-items: end;
-      padding: 12px;
+      padding: 12px 14px;
       border-bottom: 1px solid var(--line);
       background: var(--panel);
     }
+
     label {
       display: grid;
       gap: 4px;
       color: var(--muted);
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 650;
     }
+
     input, select, textarea {
       width: 100%;
       border: 1px solid var(--line);
@@ -52,31 +117,66 @@
       background: #fff;
       color: var(--text);
       font: inherit;
+      outline: none;
     }
-    input, select { height: 34px; padding: 0 9px; }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #91a8ea;
+      box-shadow: 0 0 0 3px rgba(36, 87, 214, 0.10);
+    }
+
+    input, select {
+      height: 34px;
+      padding: 0 9px;
+    }
+
     button {
       height: 34px;
       padding: 0 12px;
-      border: 1px solid var(--line);
+      border: 1px solid var(--line-strong);
       border-radius: 6px;
       background: #fff;
       color: var(--text);
-      font-weight: 650;
+      font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
     }
+
     button.primary {
       border-color: var(--primary);
       background: var(--primary);
       color: #fff;
     }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .page {
+      display: none;
+      min-height: 0;
+      padding: 12px 14px;
+    }
+
+    .page.active {
+      display: block;
+    }
+
     .workspace {
       min-height: 0;
       display: grid;
       grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
       gap: 12px;
-      padding: 12px;
+      height: calc(100vh - 137px);
+      min-height: 520px;
     }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
     .pane {
       min-height: 0;
       display: grid;
@@ -86,14 +186,25 @@
       background: var(--panel);
       overflow: hidden;
     }
+
     .pane-title {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 12px;
+      gap: 10px;
+      min-height: 42px;
+      padding: 9px 12px;
       border-bottom: 1px solid var(--line);
-      font-weight: 700;
+      font-weight: 750;
     }
+
+    .pane-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     textarea {
       min-height: 0;
       height: 100%;
@@ -103,19 +214,22 @@
       padding: 12px;
       font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
       line-height: 1.55;
-      outline: none;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
     }
+
     th, td {
       padding: 8px 10px;
       border-bottom: 1px solid var(--line);
       text-align: left;
       vertical-align: top;
+      overflow-wrap: anywhere;
     }
+
     th {
       color: var(--muted);
       background: #fbfcfe;
@@ -123,22 +237,139 @@
       top: 0;
       z-index: 1;
     }
-    .table-wrap { overflow: auto; }
+
+    code {
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+    }
+
+    pre {
+      margin: 0;
+      min-height: 0;
+      overflow: auto;
+      padding: 12px;
+      background: #fbfcfe;
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .table-wrap {
+      min-height: 0;
+      overflow: auto;
+    }
+
     .status {
       color: var(--muted);
       font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
     }
+
     .status.ok { color: var(--ok); }
     .status.error { color: var(--danger); }
-    @media (max-width: 900px) {
-      .toolbar { grid-template-columns: 1fr 1fr; }
-      .workspace { grid-template-columns: 1fr; }
+    .status.warn { color: var(--warn); }
+
+    .wide-grid {
+      display: grid;
+      grid-template-columns: minmax(320px, 1fr) minmax(320px, 0.85fr);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .route-list {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+    }
+
+    .route-row {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .route-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .method {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 68px;
+      height: 24px;
+      border-radius: 5px;
+      background: #eef2f7;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .route-path {
+      display: grid;
+      gap: 4px;
+    }
+
+    .route-path span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 1000px) {
+      .scopebar {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .workspace,
+      .wide-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+
+      .pane {
+        min-height: 360px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+
+      .scopebar {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
 <div class="shell">
-    <div class="toolbar">
+  <header class="topbar">
+    <div class="brand">
+      <strong>Aster Config</strong>
+      <span>Embedded admin surface</span>
+    </div>
+    <nav class="nav" aria-label="Aster pages">
+      <a href="/aster/embed/config" data-page-link="editor">Editor</a>
+      <a href="/aster/embed/config/query" data-page-link="query">Query</a>
+      <a href="/aster/embed/config/releases" data-page-link="releases">Releases</a>
+      <a href="/aster/embed/config/routes" data-page-link="routes">Routes</a>
+    </nav>
+  </header>
+
+  <div class="scopebar">
     <label>Env <input id="env" value="dev"></label>
     <label>Namespace <input id="namespace" value="common"></label>
     <label>Format
@@ -149,75 +380,252 @@
         <option>PROPERTIES</option>
       </select>
     </label>
+    <label>Known Revision <input id="knownRevision" value="0" inputmode="numeric"></label>
     <button id="parse">Parse</button>
     <button id="draft">Save Draft</button>
     <button id="publish" class="primary">Publish</button>
   </div>
-  <main class="workspace">
-    <section class="pane">
-      <div class="pane-title">
-        <span>Source</span>
-        <span id="sourceStatus" class="status">ready</span>
-      </div>
-      <textarea id="source">spring:
+
+  <main>
+    <section id="page-editor" class="page">
+      <div class="workspace">
+        <section class="pane">
+          <div class="pane-title">
+            <span>Source</span>
+            <span id="sourceStatus" class="status">ready</span>
+          </div>
+          <textarea id="source">spring:
   datasource:
     url: jdbc:mysql://localhost:3306/demo
     hikari:
       maximum-pool-size: 10
 feature:
   enabled: true</textarea>
-    </section>
-    <section class="pane">
-      <div class="pane-title">
-        <span>Key / Value Preview</span>
-        <span id="previewStatus" class="status">0 items</span>
+        </section>
+        <section class="pane">
+          <div class="pane-title">
+            <span>Key / Value Preview</span>
+            <span id="previewStatus" class="status">0 items</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+              <tr><th style="width:45%">Key</th><th>Value</th><th style="width:90px">Type</th></tr>
+              </thead>
+              <tbody id="preview"></tbody>
+            </table>
+          </div>
+        </section>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-          <tr><th style="width:45%">Key</th><th>Value</th><th style="width:90px">Type</th></tr>
-          </thead>
-          <tbody id="preview"></tbody>
-        </table>
+    </section>
+
+    <section id="page-query" class="page">
+      <div class="wide-grid">
+        <section class="pane">
+          <div class="pane-title">
+            <span>Published Items</span>
+            <div class="pane-tools">
+              <label>Keyword <input id="queryKeyword" placeholder="optional"></label>
+              <button id="loadItems" class="primary">Load Items</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+              <tr>
+                <th style="width:24%">Key</th>
+                <th>Value</th>
+                <th style="width:86px">Type</th>
+                <th style="width:86px">Rev</th>
+                <th style="width:88px">Enabled</th>
+              </tr>
+              </thead>
+              <tbody id="itemsTable"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="stack">
+          <section class="pane">
+            <div class="pane-title">
+              <span>Client Config Response</span>
+              <div class="pane-tools">
+                <button id="checkRevision">Check Revision</button>
+                <button id="loadClientConfig" class="primary">Load Client Config</button>
+              </div>
+            </div>
+            <pre id="clientResponse">{}</pre>
+          </section>
+          <section class="pane">
+            <div class="pane-title">
+              <span>Query Status</span>
+              <span id="queryStatus" class="status">ready</span>
+            </div>
+            <pre id="queryHint">Admin query reads normalized items.
+Client query shows the payload that business services receive.</pre>
+          </section>
+        </section>
+      </div>
+    </section>
+
+    <section id="page-releases" class="page">
+      <section class="pane" style="min-height: 520px;">
+        <div class="pane-title">
+          <span>Release History</span>
+          <div class="pane-tools">
+            <label>Limit <input id="releaseLimit" value="20" inputmode="numeric"></label>
+            <button id="loadReleases" class="primary">Load Releases</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+            <tr>
+              <th style="width:100px">Revision</th>
+              <th>Note</th>
+              <th style="width:160px">Operator</th>
+              <th style="width:220px">Published At</th>
+            </tr>
+            </thead>
+            <tbody id="releasesTable"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section id="page-routes" class="page">
+      <div class="wide-grid">
+        <section class="pane">
+          <div class="pane-title">
+            <span>Page Routes</span>
+            <span class="status">embed paths</span>
+          </div>
+          <div class="route-list" id="pageRoutes"></div>
+        </section>
+        <section class="pane">
+          <div class="pane-title">
+            <span>API Routes</span>
+            <span class="status">server contract</span>
+          </div>
+          <div class="route-list" id="apiRoutes"></div>
+        </section>
       </div>
     </section>
   </main>
 </div>
+
 <script>
   const params = new URLSearchParams(location.search);
   const token = params.get("token") || "";
+  const pages = {
+    "/aster/embed/config": "editor",
+    "/aster/embed/config/query": "query",
+    "/aster/embed/config/releases": "releases",
+    "/aster/embed/config/routes": "routes"
+  };
+  const routeDefinitions = [
+    ["GET", "/aster/embed/config", "Config document editor and publish canvas"],
+    ["GET", "/aster/embed/config/query", "Published item query and client payload preview"],
+    ["GET", "/aster/embed/config/releases", "Release history for the selected env and namespace"],
+    ["GET", "/aster/embed/config/routes", "Human-readable page and API route index"]
+  ];
+  const apiDefinitions = [
+    ["GET", "/aster/admin/api/items?env=dev&namespace=common", "Admin query for normalized key/value items"],
+    ["GET", "/aster/admin/api/drafts?env=dev&namespace=common", "Open draft list"],
+    ["POST", "/aster/admin/api/drafts", "Save one key/value draft"],
+    ["POST", "/aster/admin/api/documents/parse", "Parse JSON, XML, YAML, or properties into key/value preview"],
+    ["POST", "/aster/admin/api/documents/draft", "Save a full source document as drafts"],
+    ["POST", "/aster/admin/api/releases/publish", "Publish open drafts and notify clients"],
+    ["GET", "/aster/admin/api/releases?env=dev&namespace=common&limit=20", "Release history"],
+    ["GET", "/aster/client/api/configs?env=dev&namespaces=common", "Client-facing config payload"],
+    ["GET", "/aster/client/api/revision?env=dev&namespaces=common&knownRevision=0", "Client revision check"]
+  ];
+
   const preview = document.querySelector("#preview");
   const sourceStatus = document.querySelector("#sourceStatus");
   const previewStatus = document.querySelector("#previewStatus");
+  const queryStatus = document.querySelector("#queryStatus");
+
+  function scope() {
+    return {
+      env: document.querySelector("#env").value.trim() || "dev",
+      namespace: document.querySelector("#namespace").value.trim() || "common",
+      knownRevision: document.querySelector("#knownRevision").value.trim() || "0"
+    };
+  }
 
   function payload() {
     return {
-      env: document.querySelector("#env").value,
-      namespace: document.querySelector("#namespace").value,
+      env: scope().env,
+      namespace: scope().namespace,
       sourceFormat: document.querySelector("#format").value,
       content: document.querySelector("#source").value
     };
   }
 
-  function render(values) {
-    const rows = Object.entries(values).map(([key, item]) => {
-      const value = item.value == null ? "" : String(item.value);
-      return `<tr><td>${escapeHtml(key)}</td><td>${escapeHtml(value)}</td><td>${escapeHtml(item.valueType)}</td></tr>`;
+  function pageName() {
+    const normalized = location.pathname.replace(/\/$/, "");
+    return pages[normalized] || "editor";
+  }
+
+  function activatePage() {
+    const current = pageName();
+    document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
+    document.querySelector(`#page-${current}`).classList.add("active");
+    document.querySelectorAll("[data-page-link]").forEach(link => {
+      link.classList.toggle("active", link.dataset.pageLink === current);
+      link.href = withToken(link.getAttribute("href"));
     });
-    preview.innerHTML = rows.join("");
-    previewStatus.textContent = `${rows.length} items`;
+    document.querySelector("#parse").disabled = current !== "editor";
+    document.querySelector("#draft").disabled = current !== "editor";
+    document.querySelector("#publish").disabled = current !== "editor";
+    if (current === "routes") {
+      renderRoutes();
+    }
+  }
+
+  function withToken(path) {
+    if (!token) {
+      return path;
+    }
+    return `${path}?token=${encodeURIComponent(token)}`;
   }
 
   function escapeHtml(value) {
-    return String(value)
+    return String(value == null ? "" : value)
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;");
   }
 
+  function renderPreview(values) {
+    const rows = Object.entries(values || {}).map(([key, item]) => {
+      const value = item.value == null ? "" : String(item.value);
+      return `<tr><td>${escapeHtml(key)}</td><td>${escapeHtml(value)}</td><td>${escapeHtml(item.valueType)}</td></tr>`;
+    });
+    preview.innerHTML = rows.join("") || emptyRow(3, "No preview items");
+    previewStatus.textContent = `${rows.length} items`;
+  }
+
+  function emptyRow(colspan, message) {
+    return `<tr><td colspan="${colspan}">${escapeHtml(message)}</td></tr>`;
+  }
+
+  function setStatus(element, text, kind) {
+    element.textContent = text;
+    element.className = `status${kind ? " " + kind : ""}`;
+  }
+
+  async function request(url, options) {
+    const res = await fetch(url, options);
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+    return res.json();
+  }
+
   async function post(url, body) {
-    const res = await fetch(url, {
+    return request(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -225,42 +633,162 @@ feature:
       },
       body: JSON.stringify(body)
     });
-    if (!res.ok) {
-      throw new Error(await res.text());
-    }
-    return res.json();
+  }
+
+  function queryString(values) {
+    return new URLSearchParams(values).toString();
   }
 
   async function parse() {
-    sourceStatus.textContent = "parsing";
-    sourceStatus.className = "status";
+    setStatus(sourceStatus, "parsing", "");
     try {
       const result = await post("/aster/admin/api/documents/parse", payload());
-      render(result.values);
-      sourceStatus.textContent = "parsed";
-      sourceStatus.className = "status ok";
+      renderPreview(result.values);
+      setStatus(sourceStatus, "parsed", "ok");
     } catch (e) {
-      sourceStatus.textContent = "parse failed";
-      sourceStatus.className = "status error";
+      setStatus(sourceStatus, "parse failed", "error");
       console.error(e);
     }
   }
 
-  document.querySelector("#parse").addEventListener("click", parse);
-  document.querySelector("#draft").addEventListener("click", async () => {
-    const result = await post("/aster/admin/api/documents/draft", payload());
-    sourceStatus.textContent = `drafts ${result.openDrafts}`;
-    sourceStatus.className = "status ok";
-  });
-  document.querySelector("#publish").addEventListener("click", async () => {
-    const result = await post("/aster/admin/api/releases/publish", {
-      env: payload().env,
-      namespace: payload().namespace,
-      releaseNote: "Published from embedded canvas"
+  async function saveDraft() {
+    setStatus(sourceStatus, "saving draft", "");
+    try {
+      const result = await post("/aster/admin/api/documents/draft", payload());
+      setStatus(sourceStatus, `drafts ${result.openDrafts}`, "ok");
+    } catch (e) {
+      setStatus(sourceStatus, "draft failed", "error");
+      console.error(e);
+    }
+  }
+
+  async function publish() {
+    setStatus(sourceStatus, "publishing", "");
+    try {
+      const current = scope();
+      const result = await post("/aster/admin/api/releases/publish", {
+        env: current.env,
+        namespace: current.namespace,
+        releaseNote: "Published from embedded canvas"
+      });
+      document.querySelector("#knownRevision").value = result.revision;
+      setStatus(sourceStatus, `revision ${result.revision}`, "ok");
+    } catch (e) {
+      setStatus(sourceStatus, "publish failed", "error");
+      console.error(e);
+    }
+  }
+
+  async function loadItems() {
+    const current = scope();
+    const keyword = document.querySelector("#queryKeyword").value.trim();
+    const qs = queryString({
+      env: current.env,
+      namespace: current.namespace,
+      keyword,
+      includeDisabled: "true"
     });
-    sourceStatus.textContent = `revision ${result.revision}`;
-    sourceStatus.className = "status ok";
-  });
+    setStatus(queryStatus, "loading items", "");
+    try {
+      const items = await request(`/aster/admin/api/items?${qs}`);
+      const rows = items.map(item => `<tr>
+        <td>${escapeHtml(item.key)}</td>
+        <td>${escapeHtml(item.value)}</td>
+        <td>${escapeHtml(item.valueType)}</td>
+        <td>${escapeHtml(item.revision)}</td>
+        <td>${item.enabled ? "yes" : "no"}</td>
+      </tr>`);
+      document.querySelector("#itemsTable").innerHTML = rows.join("") || emptyRow(5, "No published items");
+      setStatus(queryStatus, `${items.length} items`, "ok");
+    } catch (e) {
+      setStatus(queryStatus, "item query failed", "error");
+      console.error(e);
+    }
+  }
+
+  async function loadClientConfig() {
+    const current = scope();
+    const qs = queryString({
+      env: current.env,
+      namespaces: current.namespace,
+      knownRevision: current.knownRevision
+    });
+    setStatus(queryStatus, "loading client payload", "");
+    try {
+      const result = await request(`/aster/client/api/configs?${qs}`);
+      document.querySelector("#clientResponse").textContent = JSON.stringify(result, null, 2);
+      document.querySelector("#knownRevision").value = result.revision;
+      setStatus(queryStatus, `client revision ${result.revision}`, "ok");
+    } catch (e) {
+      setStatus(queryStatus, "client query failed", "error");
+      console.error(e);
+    }
+  }
+
+  async function checkRevision() {
+    const current = scope();
+    const qs = queryString({
+      env: current.env,
+      namespaces: current.namespace,
+      knownRevision: current.knownRevision
+    });
+    setStatus(queryStatus, "checking revision", "");
+    try {
+      const result = await request(`/aster/client/api/revision?${qs}`);
+      document.querySelector("#clientResponse").textContent = JSON.stringify(result, null, 2);
+      setStatus(queryStatus, result.changed ? "changed" : "not changed", result.changed ? "warn" : "ok");
+    } catch (e) {
+      setStatus(queryStatus, "revision check failed", "error");
+      console.error(e);
+    }
+  }
+
+  async function loadReleases() {
+    const current = scope();
+    const limit = document.querySelector("#releaseLimit").value.trim() || "20";
+    const qs = queryString({ env: current.env, namespace: current.namespace, limit });
+    try {
+      const releases = await request(`/aster/admin/api/releases?${qs}`);
+      const rows = releases.map(release => `<tr>
+        <td>${escapeHtml(release.revision)}</td>
+        <td>${escapeHtml(release.releaseNote)}</td>
+        <td>${escapeHtml(release.operator)}</td>
+        <td>${escapeHtml(release.publishedAt)}</td>
+      </tr>`);
+      document.querySelector("#releasesTable").innerHTML = rows.join("") || emptyRow(4, "No releases");
+    } catch (e) {
+      document.querySelector("#releasesTable").innerHTML = emptyRow(4, "Release query failed");
+      console.error(e);
+    }
+  }
+
+  function renderRouteRows(target, rows) {
+    document.querySelector(target).innerHTML = rows.map(([method, path, note]) => `
+      <div class="route-row">
+        <span class="method">${escapeHtml(method)}</span>
+        <div class="route-path">
+          <code>${escapeHtml(path)}</code>
+          <span>${escapeHtml(note)}</span>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function renderRoutes() {
+    renderRouteRows("#pageRoutes", routeDefinitions);
+    renderRouteRows("#apiRoutes", apiDefinitions);
+  }
+
+  document.querySelector("#parse").addEventListener("click", parse);
+  document.querySelector("#draft").addEventListener("click", saveDraft);
+  document.querySelector("#publish").addEventListener("click", publish);
+  document.querySelector("#loadItems").addEventListener("click", loadItems);
+  document.querySelector("#loadClientConfig").addEventListener("click", loadClientConfig);
+  document.querySelector("#checkRevision").addEventListener("click", checkRevision);
+  document.querySelector("#loadReleases").addEventListener("click", loadReleases);
+  window.addEventListener("popstate", activatePage);
+
+  activatePage();
   parse();
 </script>
 </body>

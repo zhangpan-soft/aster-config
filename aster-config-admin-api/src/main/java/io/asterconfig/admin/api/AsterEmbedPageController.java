@@ -10,7 +10,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AsterEmbedPageController {
 
-    @GetMapping(value = "/aster/embed/config", produces = MediaType.TEXT_HTML_VALUE)
+    @GetMapping(value = {
+            "/aster/embed/config",
+            "/aster/embed/config/query",
+            "/aster/embed/config/releases",
+            "/aster/embed/config/routes"
+    }, produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<Resource> configCanvas() {
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
