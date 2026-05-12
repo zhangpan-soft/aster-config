@@ -6,6 +6,12 @@ Aster Config is store-first and integration-first.
 
 The primary production profile is `integrated`: the business database is the source of truth, and Aster provides configuration domain logic, format parsing, drafts, releases, history, and embeddable management APIs.
 
+The project exists because many runtime settings are business configuration, not only service configuration. Teams often already have a business admin system with users, permissions, audit logs, approval flows, tenant or merchant context, and operator-facing workflows. Moving those settings into a standalone configuration console creates a second management island and makes it hard to reuse the host system's permission and audit model.
+
+Aster Config is not intended to replace standalone configuration centers. It targets the case where the configuration experience should be part of an existing business platform: embedded pages, existing identity, existing approval flow, existing database, and business-domain APIs.
+
+Use a standalone configuration center when you need a separate configuration platform. Use Aster Config when configuration management must be embedded into your own business admin system.
+
 ## Runtime Profiles
 
 ### local
@@ -72,6 +78,9 @@ aster-config-server
 
 aster-config-server-impl
   Spring implementation, store wiring, admin API, embeddable UI, client REST endpoints, Netty push server
+
+aster-config-server-spring-boot-starter
+  server-side Spring Boot auto-configuration
 
 aster-config-client
   HTTP config loading and Netty change-notification client

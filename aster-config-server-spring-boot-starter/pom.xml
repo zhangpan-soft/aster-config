@@ -10,8 +10,8 @@
         <version>0.1.0</version>
     </parent>
 
-    <artifactId>aster-config-spring-boot-starter</artifactId>
-    <name>Aster Config Spring Boot Starter</name>
+    <artifactId>aster-config-server-spring-boot-starter</artifactId>
+    <name>Aster Config Server Spring Boot Starter</name>
 
     <dependencies>
         <dependency>

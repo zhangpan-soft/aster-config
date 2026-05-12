@@ -1,4 +1,4 @@
-package io.asterconfig.spring;
+package io.asterconfig.server.spring;
 
 import io.asterconfig.admin.api.AsterAdminController;
 import io.asterconfig.admin.api.AsterEmbedPageController;

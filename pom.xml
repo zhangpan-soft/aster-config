@@ -50,7 +50,7 @@
         <module>aster-config-server-impl</module>
         <module>aster-config-client</module>
         <module>aster-config-client-spring-boot-starter</module>
-        <module>aster-config-spring-boot-starter</module>
+        <module>aster-config-server-spring-boot-starter</module>
         <module>aster-config-app</module>
     </modules>
 
@@ -109,7 +109,7 @@
             </dependency>
             <dependency>
                 <groupId>io.asterconfig</groupId>
-                <artifactId>aster-config-spring-boot-starter</artifactId>
+                <artifactId>aster-config-server-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

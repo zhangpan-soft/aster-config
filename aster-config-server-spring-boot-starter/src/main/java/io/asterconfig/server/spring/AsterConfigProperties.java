@@ -1,4 +1,4 @@
-package io.asterconfig.spring;
+package io.asterconfig.server.spring;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

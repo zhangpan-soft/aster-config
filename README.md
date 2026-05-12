@@ -1,8 +1,25 @@
 # Aster Config
 
+[简体中文](README.zh-CN.md)
+
 Aster Config is an embeddable configuration management engine for business systems.
 
-It is not positioned as another standalone Nacos console. The goal is to let an existing business admin system manage runtime configuration with the same users, permissions, audit trail, approval flow, and operational context that the business already uses.
+It is not positioned as another standalone configuration console. The goal is to let an existing business admin system manage runtime configuration with the same users, permissions, audit trail, approval flow, and operational context that the business already uses.
+
+## Why This Exists
+
+Many teams already have a mature business admin system. It owns users, roles, permissions, audit logs, approval flows, tenant or merchant context, and operational workflows. Runtime business configuration naturally belongs there: operators should manage feature switches, payment rules, risk parameters, activity rules, routing rules, and third-party integration settings in the same place where they manage the rest of the business.
+
+Putting those configurations into a standalone config center often creates a second management island:
+
+- operators need another console and another permission model
+- configuration changes are disconnected from business audit and approval workflows
+- business pages cannot easily embed config editing as part of their normal screens
+- integrating a standalone config console with an existing admin backend is often more work than the config storage itself
+
+Standalone configuration centers are useful when a team wants a separate configuration platform. Aster Config exists for a different case: when configuration is part of your business management domain and must be embedded into your own admin system, reuse your own database, and connect to your own authentication, authorization, audit, and operation model.
+
+Use a standalone configuration center when you want a separate configuration platform. Use Aster Config when you want a configuration engine that can live inside your existing business platform.
 
 ## Status
 
@@ -43,7 +60,7 @@ Redis is not required. It can be added later as an accelerator, not as the autho
 | `aster-config-server-impl` | Spring server implementation, admin API, store wiring, client endpoints, Netty push |
 | `aster-config-client` | client SDK core implementation |
 | `aster-config-client-spring-boot-starter` | Spring Boot startup loading and runtime polling |
-| `aster-config-spring-boot-starter` | server-side auto-configuration internals |
+| `aster-config-server-spring-boot-starter` | server-side Spring Boot auto-configuration |
 | `aster-config-app` | runnable local app |
 
 ## Quickstart
