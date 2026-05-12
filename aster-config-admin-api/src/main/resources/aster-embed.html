@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aster Config</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --line: #d9dee7;
+      --text: #172033;
+      --muted: #667085;
+      --primary: #2457d6;
+      --danger: #c0392b;
+      --ok: #0f7b4f;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr)) auto auto auto;
+      gap: 8px;
+      align-items: end;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+    label {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+    }
+    input, select { height: 34px; padding: 0 9px; }
+    button {
+      height: 34px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      font-weight: 650;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    button.primary {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #fff;
+    }
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+      gap: 12px;
+      padding: 12px;
+    }
+    .pane {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+    .pane-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 700;
+    }
+    textarea {
+      min-height: 0;
+      height: 100%;
+      resize: none;
+      border: 0;
+      border-radius: 0;
+      padding: 12px;
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      line-height: 1.55;
+      outline: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      color: var(--muted);
+      background: #fbfcfe;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .table-wrap { overflow: auto; }
+    .status {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .status.ok { color: var(--ok); }
+    .status.error { color: var(--danger); }
+    @media (max-width: 900px) {
+      .toolbar { grid-template-columns: 1fr 1fr; }
+      .workspace { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+    <div class="toolbar">
+    <label>Env <input id="env" value="dev"></label>
+    <label>Namespace <input id="namespace" value="common"></label>
+    <label>Format
+      <select id="format">
+        <option>YAML</option>
+        <option>JSON</option>
+        <option>XML</option>
+        <option>PROPERTIES</option>
+      </select>
+    </label>
+    <button id="parse">Parse</button>
+    <button id="draft">Save Draft</button>
+    <button id="publish" class="primary">Publish</button>
+  </div>
+  <main class="workspace">
+    <section class="pane">
+      <div class="pane-title">
+        <span>Source</span>
+        <span id="sourceStatus" class="status">ready</span>
+      </div>
+      <textarea id="source">spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/demo
+    hikari:
+      maximum-pool-size: 10
+feature:
+  enabled: true</textarea>
+    </section>
+    <section class="pane">
+      <div class="pane-title">
+        <span>Key / Value Preview</span>
+        <span id="previewStatus" class="status">0 items</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+          <tr><th style="width:45%">Key</th><th>Value</th><th style="width:90px">Type</th></tr>
+          </thead>
+          <tbody id="preview"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+  const params = new URLSearchParams(location.search);
+  const token = params.get("token") || "";
+  const preview = document.querySelector("#preview");
+  const sourceStatus = document.querySelector("#sourceStatus");
+  const previewStatus = document.querySelector("#previewStatus");
+
+  function payload() {
+    return {
+      env: document.querySelector("#env").value,
+      namespace: document.querySelector("#namespace").value,
+      sourceFormat: document.querySelector("#format").value,
+      content: document.querySelector("#source").value
+    };
+  }
+
+  function render(values) {
+    const rows = Object.entries(values).map(([key, item]) => {
+      const value = item.value == null ? "" : String(item.value);
+      return `<tr><td>${escapeHtml(key)}</td><td>${escapeHtml(value)}</td><td>${escapeHtml(item.valueType)}</td></tr>`;
+    });
+    preview.innerHTML = rows.join("");
+    previewStatus.textContent = `${rows.length} items`;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  }
+
+  async function post(url, body) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Aster-Embed-Token": token
+      },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+    return res.json();
+  }
+
+  async function parse() {
+    sourceStatus.textContent = "parsing";
+    sourceStatus.className = "status";
+    try {
+      const result = await post("/aster/admin/api/documents/parse", payload());
+      render(result.values);
+      sourceStatus.textContent = "parsed";
+      sourceStatus.className = "status ok";
+    } catch (e) {
+      sourceStatus.textContent = "parse failed";
+      sourceStatus.className = "status error";
+      console.error(e);
+    }
+  }
+
+  document.querySelector("#parse").addEventListener("click", parse);
+  document.querySelector("#draft").addEventListener("click", async () => {
+    const result = await post("/aster/admin/api/documents/draft", payload());
+    sourceStatus.textContent = `drafts ${result.openDrafts}`;
+    sourceStatus.className = "status ok";
+  });
+  document.querySelector("#publish").addEventListener("click", async () => {
+    const result = await post("/aster/admin/api/releases/publish", {
+      env: payload().env,
+      namespace: payload().namespace,
+      releaseNote: "Published from embedded canvas"
+    });
+    sourceStatus.textContent = `revision ${result.revision}`;
+    sourceStatus.className = "status ok";
+  });
+  parse();
+</script>
+</body>
+</html>
